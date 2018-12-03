@@ -1,105 +1,79 @@
 import json, datetime
+from django.utils import timezone
 from rest_framework import status
 from django.test import TestCase, Client
 from django.urls import reverse
-from actividades.models import TipoDeOrganizacion, Organizacion, Evento, Ubicacion
-from actividades.serializers import TipoDeOrganizacionSerializer, OrganizacionSerializer
+from users.models import User
+from actividades.models import RubroEvento, Evento, Ubicacion, CategoriaRecurso, Recurso, Necesidad
+from actividades.serializers import RubroEventoSerializer, CategoriaRecursoSerializer, RecursoSerializer, \
+    NecesidadSerializer
 
 client = Client()
 
-class TipoDeOrganizacionTests(TestCase):
+class RubroEventoTests(TestCase):
 
     def setUp(self):
-        self.ddhh = TipoDeOrganizacion.objects.create(
-            nombre = "Defensa de los DDHH"
+        self.salud = RubroEvento.objects.create(
+            nombre = "Salud"
         )
-        self.peta = TipoDeOrganizacion.objects.create(
-            nombre = "Defensa de los animales"
+        self.edu = RubroEvento.objects.create(
+            nombre = "Educación"
         )
         
     def test_get_todos(self):
-        response = client.get(reverse('get_post_tipo_de_organizacion'))
-        tipos = TipoDeOrganizacion.objects.all()
-        serializer = TipoDeOrganizacionSerializer(tipos, many=True)
+        response = client.get(reverse('get_post_rubro_evento'))
+        rubros = RubroEvento.objects.all()
+        serializer = RubroEventoSerializer(rubros, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_existente(self):
         response = client.get(
-            reverse('get_put_delete_tipo_de_organizacion', kwargs={'id': self.ddhh.id})
+            reverse('get_put_delete_rubro_evento', kwargs={'id': self.salud.id})
         )
-        tipo = TipoDeOrganizacion.objects.get(id=self.ddhh.id)
-        serializer = TipoDeOrganizacionSerializer(tipo)
+        rubro = RubroEvento.objects.get(id=self.salud.id)
+        serializer = RubroEventoSerializer(rubro)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_no_existente(self):
         response = client.get(
-            reverse('get_put_delete_tipo_de_organizacion', kwargs={'id': 3})
-        )
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-class OrganizacionTests(TestCase):
-
-    def setUp(self):
-        self.ddhh = TipoDeOrganizacion.objects.create(
-            nombre = "Defensa de los DDHH"
-        )
-        self.ai = Organizacion.objects.create(
-            nombre = "Amnistía Internacional",
-            tipo_id = self.ddhh.id
-        )
-        self.madres = Organizacion.objects.create(
-            nombre = "Madres",
-            tipo_id = self.ddhh.id
-        )
-        
-    def test_get_todos(self):
-        response = client.get(reverse('get_post_organizacion'))
-        organizaciones = Organizacion.objects.all()
-        self.assertEqual(2, len(response.data))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_get_existente(self):
-        response = client.get(
-            reverse('get_put_delete_organizacion', kwargs={'id': self.ai.id})
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_get_no_existente(self):
-        response = client.get(
-            reverse('get_put_delete_organizacion', kwargs={'id': 3})
+            reverse('get_put_delete_rubro_evento', kwargs={'id': 30})
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 class EventoTests(TestCase):
 
     def setUp(self):
-        self.ddhh = TipoDeOrganizacion.objects.create(
-            nombre = "Defensa de los DDHH"
+        self.usuario = User.objects.create(
+            email = "jsdf@mfad.com",
+            nombre = "Mi ONG",
+            user_type = 1
         )
-        self.ai = Organizacion.objects.create(
-            nombre = "Amnistía Internacional",
-            tipo_id = self.ddhh.id
-        )
+        self.salud = RubroEvento.objects.create(
+            nombre = "Salud"
+        )     
         self.ubicacion = Ubicacion.objects.create(
-            latitud = None,
-            longitud = None,
+            latitud = -10.0,
+            longitud = -10.0,
             notas = "Espejo Norte 926"
         )
         self.jornada = Evento.objects.create(
             nombre = "Jornada 28/04/18",
-            fecha = datetime.datetime.now(),
-            organizacion_id = self.ai.id,
-            ubicacion = self.ubicacion
+            descripcion = "Esta es una jornada de prueba",
+            fecha_hora_inicio = timezone.now(),
+            fecha_hora_fin = timezone.now(),
+            rubro_id = self.salud.id,
+            ubicacion = self.ubicacion,
+            organizacion_id = 1
         )
-        
+    
     def test_get_todos(self):
         response = client.get(reverse('get_post_evento'))
-        eventos = Organizacion.objects.all()
+        eventos = Evento.objects.all()
         self.assertEqual(1, len(response.data))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
+    """
     def test_get_existente(self):
         response = client.get(
             reverse('get_put_delete_evento', kwargs={'id': self.jornada.id})
@@ -111,3 +85,120 @@ class EventoTests(TestCase):
             reverse('get_put_delete_evento', kwargs={'id': 3})
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    """
+class CategoriaRecursoTests(TestCase):
+
+    def setUp(self):
+        self.ropa = CategoriaRecurso.objects.create(
+            nombre = "Ropa"
+        )
+        self.juguetes = CategoriaRecurso.objects.create(
+            nombre = "Juguetes"
+        )
+        
+    def test_get_todos(self):
+        response = client.get(reverse('get_post_categoria_recurso'))
+        categorias = CategoriaRecurso.objects.all()
+        serializer = CategoriaRecursoSerializer(categorias, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_existente(self):
+        response = client.get(
+            reverse('get_put_delete_categoria_recurso', kwargs={'id': self.ropa.id})
+        )
+        categoria = CategoriaRecurso.objects.get(id=self.ropa.id)
+        serializer = CategoriaRecursoSerializer(categoria)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_no_existente(self):
+        response = client.get(
+            reverse('get_put_delete_categoria_recurso', kwargs={'id': 30})
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+"""
+class RecursoTests(TestCase):
+
+    def setUp(self):
+        self.ropa = CategoriaRecurso.objects.create(
+            nombre = "Ropa"
+        )
+        self.sweater = Recurso.objects.create(
+            categoria_id = self.ropa.id,
+            nombre = "Sweater"
+        )
+        
+    def test_get_todos(self):
+        response = client.get(reverse('get_post_recurso'))
+        recursos = Recurso.objects.all()
+        serializer = RecursoSerializer(recursos, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_existente(self):
+        response = client.get(
+            reverse('get_put_delete_recurso', kwargs={'id': self.ropa.id})
+        )
+        recurso = Recurso.objects.get(id=self.ropa.id)
+        serializer = RecursoSerializer(recurso)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_no_existente(self):
+        response = client.get(
+            reverse('get_put_delete_recurso', kwargs={'id': 30})
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class NecesidadTests(TestCase):
+
+    def setUp(self):
+        self.usuario = User.objects.create(
+            email = "jsdf@mfad.com",
+            nombre = "Mi ONG",
+            user_type = 1
+        )
+        self.evento = Evento.objects.create(
+            nombre = "Jornada 28/04/18",
+            descripcion = "Esta es una jornada de prueba",
+            fecha_hora_inicio = timezone.now(),
+            fecha_hora_fin = timezone.now(),
+            organizacion_id = 1
+        )
+        self.ropa = CategoriaRecurso.objects.create(
+            nombre = "Sweater"
+        )
+        self.sweater = Recurso.objects.create(
+            categoria_id = self.ropa.id,
+            nombre = "Sweater"
+        )
+        self.necesito = Necesidad.objects.create(
+            recurso_id = self.sweater.id,
+            cantidad = 1,
+            evento_id = self.evento.id,
+            descripcion = "Tiene que ser rojo"
+        )
+        
+    def test_get_todos(self):
+        response = client.get(reverse('get_post_necesidad'))
+        necesidades = Necesidad.objects.all()
+        serializer = NecesidadSerializer(necesidades, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_existente(self):
+        response = client.get(
+            reverse('get_put_delete_necesidad', kwargs={'id': self.necesito.id})
+        )
+        necesidad = Necesidad.objects.get(id=self.necesito.id)
+        serializer = NecesidadSerializer(necesidad)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_no_existente(self):
+        response = client.get(
+            reverse('get_put_delete_necesidad', kwargs={'id': 30})
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+"""

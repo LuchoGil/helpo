@@ -1,0 +1,8 @@
+.cardImage {
+    background-image: url("../../assets/img/home-noauth-background-converted.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 80vh;
+    width: 96vw;
+}

@@ -1,3 +1,5 @@
+import os
+import sys
 from .base import *  # noqa
 
 
@@ -32,11 +34,6 @@ AUTH_PASSWORD_VALIDATORS = []  # allow easy passwords only on local
 # Celery
 CELERY_TASK_ALWAYS_EAGER = True
 
-# Email
-INSTALLED_APPS += ('naomi',)
-EMAIL_BACKEND = 'naomi.mail.backends.naomi.NaomiBackend'
-EMAIL_FILE_PATH = base_dir_join('tmp_email')
-
 # django-debug-toolbar and django-debug-toolbar-request-history
 INSTALLED_APPS += ('debug_toolbar',)
 MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
@@ -68,7 +65,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': '%(levelname)-8s [%(asctime)s] %(name)s: %(message)s'
+            'format': '[%(asctime)s] %(message)s'
         },
     },
     'handlers': {
@@ -77,17 +74,35 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
         },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': str(os.path.abspath(os.path.dirname(sys.argv[0]))) + '/logs/debug.log',
+            'formatter': 'standard',
+        },
+        'file_warning': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': str(os.path.abspath(os.path.dirname(sys.argv[0]))) + '/logs/warning.log',
+            'formatter': 'standard',
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
     },
     'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'INFO'
+        'django.db.backends': {
+            'handlers': ['null'],  # Quiet by default!
+            'propagate': False,
+            'level': 'DEBUG',
         },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'INFO'
-        }
-    }
+        'django': {
+            'handlers': ['console', 'file', 'file_warning'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
 
 JS_REVERSE_JS_MINIFY = False

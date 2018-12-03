@@ -24,7 +24,7 @@ ADMINS = (
 
 AUTH_USER_MODEL = 'users.User'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['10.0.2.2','localhost','127.0.0.1','0.0.0.0']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,10 +39,14 @@ INSTALLED_APPS = [
     'import_export',
     
     'rest_framework',
+    'rest_framework_swagger',
+    'knox',
 
     'common',
     'users',
     'actividades',
+    'reportes',
+    'recommendations'
 ]
 
 MIDDLEWARE = [
@@ -56,6 +60,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+}
 
 ROOT_URLCONF = 'helpo.urls'
 
@@ -113,5 +121,17 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 # CORS
 CORS_ORIGIN_WHITELIST = (
-    'localhost:3000'
+    'localhost:3000',
+    '10.0.2.2:8000',
+    '10.0.2.2:8001',
+    '10.0.2.2:8081'
 )
+
+# Swagger
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': '/auth/log_in/'
+}
+
+# Email
+NOTIFICATION_EMAIL = 'desarrollo@helpo.com.ar'
+REGISTER_EMAIL = 'desarrollo@helpo.com.ar'

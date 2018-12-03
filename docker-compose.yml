@@ -2,32 +2,44 @@ version: '3'
 
 services:
   db:
-    image: postgres
+    image: postgres:10.4-alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db-helpo
     ports:
       - "5432:5432"
-  pgadmin:
-    image: thajeztah/pgadmin4
-    ports:
-      - "5050:5050"
-    restart: always
-    depends_on:
-      - db
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
   api:
     build: helpo-api/.
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/helpo-api/code
+    env_file:
+      - helpo-api/.env
     ports:
       - "8000:8000"
+    volumes:
+      - ./helpo-api:/code
     depends_on:
       - db
   web:
     build: helpo-web/.
+    env_file:
+      - helpo-web/.env
     ports:
     - "3000:3000"
     volumes:
-      - .:/helpo-web/
+      - ./helpo-web/src:/usr/src/app/src
+    depends_on:
+      - db
+      - api
+  pgadmin:
+    image: thajeztah/pgadmin4
+    volumes:
+      - ./pgadmin:/pgadmin/
+    ports:
+      - "5050:5050"
+    depends_on:
+      - db
+
+# Default docker-compose, made for development
